@@ -5,6 +5,17 @@ export default class Project {
         this.id = Date.now();
     }
 
+    addTask(taskObj) {
+        const taskExists = this.tasks.some((task) => task.title === taskObj.title);
+        
+        if (taskExists) {
+            return false;
+        }
+    
+        this.tasks.push(taskObj);
+        return true;
+    }
+
     getTask(id) {
         return this.tasks.find((task) => task.id === id) || null;
     }    

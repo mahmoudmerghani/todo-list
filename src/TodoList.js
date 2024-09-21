@@ -3,6 +3,17 @@ export default class TodoList {
         this.projects = [];
     }
 
+    addProject(projectObj) {
+        const projectExists = this.projects.some((project) => project.name === projectObj.name);
+        
+        if (projectExists) {
+            return false;
+        }
+    
+        this.projects.push(projectObj);
+        return true;
+    }
+    
     getProject(id) {
         return this.projects.find((project) => project.id === id) || null;
     }

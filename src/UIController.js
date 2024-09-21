@@ -81,13 +81,17 @@ export default class UIController {
             e.preventDefault();
             const formData = this.getTaskFormData(projectForm);
             const projectObj = new Project(formData.get("name"));
-            this.todoList.projects.push(projectObj);
-            this.currentProject = projectObj;
-            this.renderProjects();
-            this.renderTasks();
-
-            projectForm.reset();
-            this.switchFormVisibility(projectForm);
+            if (this.todoList.addProject(projectObj)) {
+                this.currentProject = projectObj;
+                this.renderProjects();
+                this.renderTasks();
+    
+                projectForm.reset();
+                this.switchFormVisibility(projectForm);
+            }
+            else {
+                alert("Duplicate project name\nTry different name");
+            }
         });
         
         taskForm.addEventListener("submit", (e) => {
@@ -99,14 +103,20 @@ export default class UIController {
                 formData.get("dueDate"),
                 formData.get("priority"),
             );
-            this.currentProject.tasks.push(taskObj);
-            if (this.currentProject !== this.defaultProject) {
-                this.defaultProject.tasks.push(taskObj);
+            if (this.currentProject.addTask(taskObj)) {
+                if (this.currentProject !== this.defaultProject) {
+                    // defaultProject (All Tasks) can have multiple tasks
+                    // with the same name from different projects
+                    this.defaultProject.tasks.push(taskObj);
+                }
+                this.renderTasks();
+    
+                taskForm.reset();
+                this.switchFormVisibility(taskForm);
             }
-            this.renderTasks();
-
-            taskForm.reset();
-            this.switchFormVisibility(taskForm);
+            else {
+                alert("Duplicate task name in the same project.\nTry different name");
+            }
         });
 
         projectContainer.addEventListener("click", (e) => {
