@@ -1,10 +1,12 @@
 import UI from "./UI";
-import {Task, Project, TodoList} from "./TodoList";
+import Task from "./Task";
+import Project from "./Project";
+import TodoList from "./TodoList";
 
 export default class UIController {
     constructor() {
         this.todoList = new TodoList();
-        this.defaultProject = new Project("Project");
+        this.defaultProject = new Project("All Tasks");
         this.currentProject = this.defaultProject;
         this.todoList.projects.push(this.defaultProject);
         this.renderProjects();
@@ -47,6 +49,17 @@ export default class UIController {
             taskContainer.appendChild(UI.createTask(task));
         });
     }
+    
+    renderAllTasks() {
+        const taskContainer = document.querySelector(".task-container");
+        taskContainer.innerHTML = "";
+        this.todoList.projects.forEach((project) => {
+            project.tasks.forEach((task) => {
+                taskContainer.appendChild(UI.createTask(task));
+            });
+        });
+
+    }
 
     bindEventListeners() {
         const addProjectBtn = document.getElementById("addProject");
@@ -62,7 +75,6 @@ export default class UIController {
         cancelProjectBtn.addEventListener("click", () => this.switchFormVisibility(projectForm));
         
         addTaskBtn.addEventListener("click", () => this.switchFormVisibility(taskForm));
-        
         cancelTaskBtn.addEventListener("click", () => this.switchFormVisibility(taskForm));
         
         projectForm.addEventListener("submit", (e) => {
@@ -88,6 +100,9 @@ export default class UIController {
                 formData.get("priority"),
             );
             this.currentProject.tasks.push(taskObj);
+            if (this.currentProject !== this.defaultProject) {
+                this.defaultProject.tasks.push(taskObj);
+            }
             this.renderTasks();
 
             taskForm.reset();
@@ -112,19 +127,12 @@ export default class UIController {
                 const task = this.currentProject.getTask(Number(taskID));
                 task.toggleIsDone();
                 this.renderTasks();
-
             }
             else if (e.target.className === "delete") {
                 const taskID = e.target.parentElement.parentElement.dataset.id;
-                this.currentProject.deleteTask(Number(taskID));
+                this.todoList.deleteTask(Number(taskID));
                 this.renderTasks();
             }
         });
     }
-
-    switchCurrentProjectTo(project) {
-        this.currentProject
-        // need a way to tell the ui if the project is the selected one
-    }
-
 }

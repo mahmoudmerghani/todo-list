@@ -1,5 +1,3 @@
-import Task from "./Task";
-
 export default class UI {
     static createProject(projectObj) {
         const project = document.createElement("button");

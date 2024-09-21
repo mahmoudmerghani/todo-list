@@ -1,7 +1,4 @@
-import Task from "./Task";
-import Project from "./Project";
-
-class TodoList {
+export default class TodoList {
     constructor() {
         this.projects = [];
     }
@@ -9,6 +6,10 @@ class TodoList {
     getProject(id) {
         return this.projects.find((project) => project.id === id) || null;
     }
-}
 
-export {Task, Project, TodoList};
+    deleteTask(id) {
+        this.projects.forEach((project) => {
+            project.deleteTask(id);
+        });
+    }
+}
