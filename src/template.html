@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo</title>
+</head>
+<body>
+    <div class="container">
+        <div class="projects">
+            <h2>Projects</h2>
+            <div class="project-container">
+            </div>
+            <button id="addProject"><span>+</span> Add Project</button>
+            <form class="project-form">
+                <input type="text" placeholder="Project Name" name="name" required>
+                <div class="controls">
+                    <button>Add</button>
+                    <button id="cancelProject">Cancel</button>
+                </div>
+            </form>
+        </div>
+        <div class="tasks">
+            <h2>Tasks</h2>
+            <div class="task-container"></div>
+            <button id="addTask"><span>+</span> Add task</button>
+            <form class="task-form">
+                <div>
+                    <input type="text" id="title" placeholder="Task Name" name="title" required>
+                </div>
+                <div>
+                    <textarea name="description" id="description" placeholder="Description" rows="7"></textarea>
+                </div>
+                <div class="date">
+                    <label for="dueDate">Due Date: </label>
+                    <input type="date" id="dueDate" name="dueDate">
+                </div>
+                <div class="priority">
+                    <label for="priority">Priority: </label>
+                    <select name="priority" id="priority">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+                <div class="controls">
+                    <button id="cancelTask" type="button">Cancel</button>
+                    <button id="confirmAdd">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
