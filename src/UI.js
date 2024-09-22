@@ -61,6 +61,20 @@ export default class UI {
         return taskContainer;
     }
 
+    static createAllTasks(taskObj) {
+        const taskElement = this.createTask(taskObj);
+        taskElement.querySelector("h3").textContent += ` (${taskObj.originProjectName})`;
+
+        return taskElement;
+    }
+
+    static createAllProject(projectObj) {
+        const projectElement = this.createProject(projectObj);
+        projectElement.classList.add("all-project");
+
+        return projectElement;
+    }
+
     static applySelectedStyle(projectElement) {
         const projectElements = document.querySelectorAll(".project");
         projectElements.forEach((project) => project.classList.remove("selected"));

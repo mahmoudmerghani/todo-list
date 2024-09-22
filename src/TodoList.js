@@ -18,6 +18,16 @@ export default class TodoList {
         return this.projects.find((project) => project.id === id) || null;
     }
 
+    getTask(id) {
+        for (const project of this.projects) {
+            const task = project.getTask(id); 
+            if (task) {
+                return task;
+            }
+        }
+        return null;
+    }
+
     deleteTask(id) {
         this.projects.forEach((project) => {
             project.deleteTask(id);

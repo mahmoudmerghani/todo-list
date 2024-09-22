@@ -6,10 +6,11 @@ import TodoList from "./TodoList";
 export default class UIController {
     constructor() {
         this.todoList = new TodoList();
-        this.defaultProject = new Project("All Tasks");
-        this.currentProject = this.defaultProject;
-        this.todoList.projects.push(this.defaultProject);
-        this.renderProjects();
+        this.allTasksProject = new Project("All Tasks");
+        this.currentProject = this.allTasksProject;
+        this.todoList.projects.push(this.allTasksProject);
+        this.renderAllTasksProject();
+        this.renderAllTasks();
         this.bindEventListeners();
     }
 
@@ -38,11 +39,16 @@ export default class UIController {
         const projectContainer = document.querySelector(".project-container");
         projectContainer.innerHTML = "";
         this.todoList.projects.forEach((project) => {
-            projectContainer.appendChild(UI.createProject(project));
+            if (project === this.allTasksProject) {
+                projectContainer.appendChild(UI.createAllProject(project));
+            }
+            else {
+                projectContainer.appendChild(UI.createProject(project));
+            }
         });
     }
 
-    renderTasks() {
+    renderCurrentProjectTasks() {
         const taskContainer = document.querySelector(".task-container");
         taskContainer.innerHTML = "";
         this.currentProject.tasks.forEach((task) => {
@@ -55,10 +61,15 @@ export default class UIController {
         taskContainer.innerHTML = "";
         this.todoList.projects.forEach((project) => {
             project.tasks.forEach((task) => {
-                taskContainer.appendChild(UI.createTask(task));
+                taskContainer.appendChild(UI.createAllTasks(task));
             });
         });
+    }
 
+    renderAllTasksProject() {
+        const projectContainer = document.querySelector(".project-container");
+        projectContainer.innerHTML = "";
+        projectContainer.appendChild(UI.createAllProject(this.allTasksProject));
     }
 
     bindEventListeners() {
@@ -84,7 +95,7 @@ export default class UIController {
             if (this.todoList.addProject(projectObj)) {
                 this.currentProject = projectObj;
                 this.renderProjects();
-                this.renderTasks();
+                this.renderCurrentProjectTasks();
     
                 projectForm.reset();
                 this.switchFormVisibility(projectForm);
@@ -102,15 +113,16 @@ export default class UIController {
                 formData.get("description"),
                 formData.get("dueDate"),
                 formData.get("priority"),
+                this.currentProject.name,
             );
             if (this.currentProject.addTask(taskObj)) {
-                if (this.currentProject !== this.defaultProject) {
-                    // defaultProject (All Tasks) can have multiple tasks
-                    // with the same name from different projects
-                    this.defaultProject.tasks.push(taskObj);
+                if (this.currentProject === this.allTasksProject) {
+                    this.renderAllTasks();
                 }
-                this.renderTasks();
-    
+                else {
+                    this.renderCurrentProjectTasks();
+                }
+
                 taskForm.reset();
                 this.switchFormVisibility(taskForm);
             }
@@ -121,12 +133,20 @@ export default class UIController {
 
         projectContainer.addEventListener("click", (e) => {
             if (
+                e.target.classList.contains("all-project") &&
+                !e.target.classList.contains("selected")
+            ) {
+                this.currentProject = this.allTasksProject;
+                this.renderAllTasks();
+                UI.applySelectedStyle(e.target);
+            }
+            else if (
                 e.target.classList.contains("project") &&
                 !e.target.classList.contains("selected")
             ) {
                 const projectID = e.target.dataset.id;
                 this.currentProject = this.todoList.getProject(Number(projectID));
-                this.renderTasks();
+                this.renderCurrentProjectTasks();
                 UI.applySelectedStyle(e.target);
             }
         });
@@ -134,14 +154,33 @@ export default class UIController {
         taskContainer.addEventListener("click", (e) => {
             if (e.target.className === "toggle") {
                 const taskID = e.target.parentElement.parentElement.dataset.id;
-                const task = this.currentProject.getTask(Number(taskID));
-                task.toggleIsDone();
-                this.renderTasks();
+                /* 
+                 * if "All Tasks" project is the current selected project
+                 * search this task in all projects in the list
+                 * because "All Tasks" project shows tasks that 
+                 * may be stored in another project object 
+                 */
+                if (this.currentProject === this.allTasksProject) {
+                    const task = this.todoList.getTask(Number(taskID));
+                    task.toggleIsDone();
+                    this.renderAllTasks();
+                }
+                else {
+                    const task = this.currentProject.getTask(Number(taskID));
+                    task.toggleIsDone();
+                    this.renderCurrentProjectTasks();
+                }
             }
             else if (e.target.className === "delete") {
                 const taskID = e.target.parentElement.parentElement.dataset.id;
-                this.todoList.deleteTask(Number(taskID));
-                this.renderTasks();
+                if (this.currentProject === this.allTasksProject) {
+                    this.todoList.deleteTask(Number(taskID));
+                    this.renderAllTasks();
+                }
+                else {
+                    this.currentProject.deleteTask(Number(taskID));
+                    this.renderCurrentProjectTasks();
+                }
             }
         });
     }
