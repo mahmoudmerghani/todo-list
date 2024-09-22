@@ -5,6 +5,13 @@ export default class UI {
         this.applySelectedStyle(project);
         project.dataset.id = projectObj.id;
         project.textContent = projectObj.name;
+
+        const deleteProject = document.createElement("div");
+        deleteProject.classList.add("delete-project");
+        deleteProject.textContent = "X";
+
+        project.appendChild(deleteProject);
+        
         return project;
     }
 
@@ -68,8 +75,9 @@ export default class UI {
         return taskElement;
     }
 
-    static createAllProject(projectObj) {
+    static createAllTasksProject(projectObj) {
         const projectElement = this.createProject(projectObj);
+        projectElement.querySelector(".delete-project").remove();
         projectElement.classList.add("all-project");
 
         return projectElement;

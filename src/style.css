@@ -52,6 +52,20 @@ button:hover,
     margin-bottom: 1rem;
 }
 
+.project {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.project .delete-project {
+    display: none;
+}
+
+.project:hover .delete-project {
+    display: block;
+}
+
 .project-form {
     display: none;
 }

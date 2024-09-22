@@ -40,7 +40,7 @@ export default class UIController {
         projectContainer.innerHTML = "";
         this.todoList.projects.forEach((project) => {
             if (project === this.allTasksProject) {
-                projectContainer.appendChild(UI.createAllProject(project));
+                projectContainer.appendChild(UI.createAllTasksProject(project));
             }
             else {
                 projectContainer.appendChild(UI.createProject(project));
@@ -69,7 +69,12 @@ export default class UIController {
     renderAllTasksProject() {
         const projectContainer = document.querySelector(".project-container");
         projectContainer.innerHTML = "";
-        projectContainer.appendChild(UI.createAllProject(this.allTasksProject));
+        projectContainer.appendChild(UI.createAllTasksProject(this.allTasksProject));
+    }
+
+    getCurrentProjectElement() {
+        const projectContainer = document.querySelector(".project-container");
+        return projectContainer.querySelector(`[data-id="${this.currentProject.id}"]`);
     }
 
     bindEventListeners() {
@@ -148,6 +153,24 @@ export default class UIController {
                 this.currentProject = this.todoList.getProject(Number(projectID));
                 this.renderCurrentProjectTasks();
                 UI.applySelectedStyle(e.target);
+            }
+            else if (e.target.classList.contains("delete-project")) {
+                const projectElement = e.target.parentElement;
+                const projectID = projectElement.dataset.id;
+                this.todoList.deleteProject(Number(projectID));
+
+                if (projectElement.classList.contains("selected")) {
+                    this.currentProject = this.todoList.getProject(
+                        Number(projectElement.previousElementSibling.dataset.id));
+                }
+                this.renderProjects();
+                if (this.currentProject === this.allTasksProject) {
+                    this.renderAllTasks();
+                }
+                else {
+                    this.renderCurrentProjectTasks();
+                }
+                UI.applySelectedStyle(this.getCurrentProjectElement());
             }
         });
 
