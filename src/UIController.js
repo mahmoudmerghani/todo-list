@@ -9,8 +9,10 @@ export default class UIController {
         this.allTasksProject = new Project("All Tasks");
         this.currentProject = this.allTasksProject;
         this.todoList.projects.push(this.allTasksProject);
-        this.renderAllTasksProject();
-        this.renderAllTasks();
+
+        this.renderProjects();
+        this.renderTasks();
+        UI.applySelectedStyle(this.getCurrentProjectElement());
         this.bindEventListeners();
     }
 
@@ -35,19 +37,6 @@ export default class UIController {
         }    
     }
 
-    renderProjects() {
-        const projectContainer = document.querySelector(".project-container");
-        projectContainer.innerHTML = "";
-        this.todoList.projects.forEach((project) => {
-            if (project === this.allTasksProject) {
-                projectContainer.appendChild(UI.createAllTasksProject(project));
-            }
-            else {
-                projectContainer.appendChild(UI.createProject(project));
-            }
-        });
-    }
-
     renderCurrentProjectTasks() {
         const taskContainer = document.querySelector(".task-container");
         taskContainer.innerHTML = "";
@@ -66,10 +55,26 @@ export default class UIController {
         });
     }
 
-    renderAllTasksProject() {
+    renderTasks() {
+        if (this.currentProject === this.allTasksProject) {
+            this.renderAllTasks();
+        }
+        else {
+            this.renderCurrentProjectTasks();
+        }
+    }
+
+    renderProjects() {
         const projectContainer = document.querySelector(".project-container");
         projectContainer.innerHTML = "";
-        projectContainer.appendChild(UI.createAllTasksProject(this.allTasksProject));
+        this.todoList.projects.forEach((project) => {
+            if (project === this.allTasksProject) {
+                projectContainer.appendChild(UI.createAllTasksProject(project));
+            }
+            else {
+                projectContainer.appendChild(UI.createProject(project));
+            }
+        });
     }
 
     getCurrentProjectElement() {
@@ -100,10 +105,12 @@ export default class UIController {
             if (this.todoList.addProject(projectObj)) {
                 this.currentProject = projectObj;
                 this.renderProjects();
-                this.renderCurrentProjectTasks();
+                this.renderTasks();
     
                 projectForm.reset();
                 this.switchFormVisibility(projectForm);
+
+                UI.applySelectedStyle(this.getCurrentProjectElement());
             }
             else {
                 alert("Duplicate project name\nTry different name");
@@ -120,13 +127,8 @@ export default class UIController {
                 formData.get("priority"),
                 this.currentProject.name,
             );
-            if (this.currentProject.addTask(taskObj)) {
-                if (this.currentProject === this.allTasksProject) {
-                    this.renderAllTasks();
-                }
-                else {
-                    this.renderCurrentProjectTasks();
-                }
+            if (this.todoList.addTask(taskObj, this.currentProject.id)) {
+                this.renderTasks();
 
                 taskForm.reset();
                 this.switchFormVisibility(taskForm);
@@ -138,20 +140,12 @@ export default class UIController {
 
         projectContainer.addEventListener("click", (e) => {
             if (
-                e.target.classList.contains("all-project") &&
-                !e.target.classList.contains("selected")
-            ) {
-                this.currentProject = this.allTasksProject;
-                this.renderAllTasks();
-                UI.applySelectedStyle(e.target);
-            }
-            else if (
                 e.target.classList.contains("project") &&
                 !e.target.classList.contains("selected")
             ) {
                 const projectID = e.target.dataset.id;
                 this.currentProject = this.todoList.getProject(Number(projectID));
-                this.renderCurrentProjectTasks();
+                this.renderTasks();
                 UI.applySelectedStyle(e.target);
             }
             else if (e.target.classList.contains("delete-project")) {
@@ -164,12 +158,8 @@ export default class UIController {
                         Number(projectElement.previousElementSibling.dataset.id));
                 }
                 this.renderProjects();
-                if (this.currentProject === this.allTasksProject) {
-                    this.renderAllTasks();
-                }
-                else {
-                    this.renderCurrentProjectTasks();
-                }
+                this.renderTasks();
+
                 UI.applySelectedStyle(this.getCurrentProjectElement());
             }
         });
@@ -177,33 +167,14 @@ export default class UIController {
         taskContainer.addEventListener("click", (e) => {
             if (e.target.className === "toggle") {
                 const taskID = e.target.parentElement.parentElement.dataset.id;
-                /* 
-                 * if "All Tasks" project is the current selected project
-                 * search this task in all projects in the list
-                 * because "All Tasks" project shows tasks that 
-                 * may be stored in another project object 
-                 */
-                if (this.currentProject === this.allTasksProject) {
-                    const task = this.todoList.getTask(Number(taskID));
-                    task.toggleIsDone();
-                    this.renderAllTasks();
-                }
-                else {
-                    const task = this.currentProject.getTask(Number(taskID));
-                    task.toggleIsDone();
-                    this.renderCurrentProjectTasks();
-                }
+                const task = this.todoList.getTask(Number(taskID));
+                task.toggleIsDone();
+                this.renderTasks();
             }
             else if (e.target.className === "delete") {
                 const taskID = e.target.parentElement.parentElement.dataset.id;
-                if (this.currentProject === this.allTasksProject) {
-                    this.todoList.deleteTask(Number(taskID));
-                    this.renderAllTasks();
-                }
-                else {
-                    this.currentProject.deleteTask(Number(taskID));
-                    this.renderCurrentProjectTasks();
-                }
+                this.todoList.deleteTask(Number(taskID));
+                this.renderTasks();
             }
         });
     }

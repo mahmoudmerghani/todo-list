@@ -2,7 +2,6 @@ export default class UI {
     static createProject(projectObj) {
         const project = document.createElement("button");
         project.classList.add("project");
-        this.applySelectedStyle(project);
         project.dataset.id = projectObj.id;
         project.textContent = projectObj.name;
 

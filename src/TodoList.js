@@ -22,9 +22,13 @@ export default class TodoList {
         this.projects = this.projects.filter((project) => project.id !== id);
     }
 
-    getTask(id) {
+    addTask(taskObj, projectID) {
+        return this.getProject(projectID).addTask(taskObj);
+    }
+
+    getTask(taskID) {
         for (const project of this.projects) {
-            const task = project.getTask(id); 
+            const task = project.getTask(taskID);
             if (task) {
                 return task;
             }
@@ -32,9 +36,12 @@ export default class TodoList {
         return null;
     }
 
-    deleteTask(id) {
-        this.projects.forEach((project) => {
-            project.deleteTask(id);
-        });
+    deleteTask(taskID) {
+        for (const project of this.projects) {
+            const task = project.getTask(taskID);
+            if (task) {
+                project.deleteTask(taskID);
+            }
+        }
     }
 }
