@@ -9,7 +9,7 @@ export default class Task {
         this.id = Date.now();
     }
 
-    toggleIsDone() {
+    toggleIsTaskDone() {
         this.isDone = !this.isDone;
     }
 }

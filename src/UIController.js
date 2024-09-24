@@ -3,17 +3,32 @@ import Task from "./Task";
 import Project from "./Project";
 import TodoList from "./TodoList";
 
+import Storage from "./Storage";
+
 export default class UIController {
     constructor() {
-        this.todoList = new TodoList();
-        this.allTasksProject = new Project("All Tasks");
-        this.currentProject = this.allTasksProject;
-        this.todoList.projects.push(this.allTasksProject);
+        this.initializeTodoList();
 
         this.renderProjects();
         this.renderTasks();
         UI.applySelectedStyle(this.getCurrentProjectElement());
+
         this.bindEventListeners();
+    }
+
+    initializeTodoList() {
+        if (Storage.getTodoList()) {
+            this.todoList = Storage.getTodoList();
+            this.allTasksProject = this.todoList.getProject(TodoList.allTasksProjectID);
+        }
+        else {
+            this.todoList = new TodoList();
+            this.allTasksProject = new Project("All Tasks");
+            this.allTasksProject.id = TodoList.allTasksProjectID;
+            this.todoList.projects.push(this.allTasksProject);
+        }
+
+        this.currentProject = this.allTasksProject;
     }
 
     getTaskFormData(form) {
@@ -167,8 +182,7 @@ export default class UIController {
         taskContainer.addEventListener("click", (e) => {
             if (e.target.className === "toggle") {
                 const taskID = e.target.parentElement.parentElement.dataset.id;
-                const task = this.todoList.getTask(Number(taskID));
-                task.toggleIsDone();
+                this.todoList.toggleIsTaskDone(Number(taskID));
                 this.renderTasks();
             }
             else if (e.target.className === "delete") {

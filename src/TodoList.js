@@ -1,4 +1,8 @@
+import Storage from "./Storage";
+
 export default class TodoList {
+    static allTasksProjectID = 0; // special ID for the default project
+
     constructor() {
         this.projects = [];
     }
@@ -11,6 +15,7 @@ export default class TodoList {
         }
     
         this.projects.push(projectObj);
+        Storage.saveTodoList(this);
         return true;
     }
     
@@ -20,10 +25,15 @@ export default class TodoList {
 
     deleteProject(id) {
         this.projects = this.projects.filter((project) => project.id !== id);
+        Storage.saveTodoList(this);
     }
 
     addTask(taskObj, projectID) {
-        return this.getProject(projectID).addTask(taskObj);
+        if (this.getProject(projectID).addTask(taskObj)) {
+            Storage.saveTodoList(this);
+            return true;
+        }
+        return false;
     }
 
     getTask(taskID) {
@@ -41,6 +51,17 @@ export default class TodoList {
             const task = project.getTask(taskID);
             if (task) {
                 project.deleteTask(taskID);
+                Storage.saveTodoList(this);
+            }
+        }
+    }
+
+    toggleIsTaskDone(taskID) {
+        for (const project of this.projects) {
+            const task = project.getTask(taskID);
+            if (task) {
+                task.toggleIsTaskDone();
+                Storage.saveTodoList(this);
             }
         }
     }
