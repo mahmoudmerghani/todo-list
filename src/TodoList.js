@@ -1,68 +1,126 @@
-import Storage from "./Storage";
+let todoList = localStorage.getItem("todoList");
 
-export default class TodoList {
-    static allTasksProjectID = 0; // special ID for the default project
+const DEFAULT_PROJECT_ID = 0;
 
-    constructor() {
-        this.projects = [];
-    }
-
-    addProject(projectObj) {
-        const projectExists = this.projects.some((project) => project.name === projectObj.name);
-        
-        if (projectExists) {
-            return false;
-        }
-    
-        this.projects.push(projectObj);
-        Storage.saveTodoList(this);
-        return true;
-    }
-    
-    getProject(id) {
-        return this.projects.find((project) => project.id === id) || null;
-    }
-
-    deleteProject(id) {
-        this.projects = this.projects.filter((project) => project.id !== id);
-        Storage.saveTodoList(this);
-    }
-
-    addTask(taskObj, projectID) {
-        if (this.getProject(projectID).addTask(taskObj)) {
-            Storage.saveTodoList(this);
-            return true;
-        }
-        return false;
-    }
-
-    getTask(taskID) {
-        for (const project of this.projects) {
-            const task = project.getTask(taskID);
-            if (task) {
-                return task;
-            }
-        }
-        return null;
-    }
-
-    deleteTask(taskID) {
-        for (const project of this.projects) {
-            const task = project.getTask(taskID);
-            if (task) {
-                project.deleteTask(taskID);
-                Storage.saveTodoList(this);
-            }
-        }
-    }
-
-    toggleIsTaskDone(taskID) {
-        for (const project of this.projects) {
-            const task = project.getTask(taskID);
-            if (task) {
-                task.toggleIsTaskDone();
-                Storage.saveTodoList(this);
-            }
-        }
-    }
+if (!todoList) {
+    todoList = {
+        tasks: [],
+        projects: [{ name: "All Tasks", id: DEFAULT_PROJECT_ID }],
+    };
+} else {
+    todoList = JSON.parse(todoList);
 }
+
+function addTask({
+    title,
+    description = "",
+    dueDate = null,
+    priority = "medium",
+    isDone = false,
+    projectId,
+}) {
+    const task = {
+        id: Date.now(),
+        title,
+        description,
+        isDone,
+        dueDate,
+        priority,
+        projectId,
+    };
+
+    todoList.tasks.push(task);
+
+    save();
+
+    return task;
+}
+
+function addProject(name) {
+    const project = { name, id: Date.now() };
+    todoList.projects.push(project);
+
+    save();
+
+    return project;
+}
+
+function getTasksInProject(projectId) {
+    return todoList.tasks.filter((task) => task.projectId === projectId);
+}
+
+function getProjectById(projectId) {
+    const project = todoList.projects.find(
+        (project) => project.id === projectId,
+    );
+    return project || null;
+}
+
+function getProjectByName(projectName) {
+    const project = todoList.projects.find(
+        (project) => project.name === projectName,
+    );
+    return project || null;
+}
+
+function getTaskByTitle(taskTitle) {
+    const task = todoList.tasks.find((task) => task.title === taskTitle);
+    return task || null;
+}
+
+function getAllProjects() {
+    return todoList.projects;
+}
+
+function getAllTasks() {
+    return todoList.tasks;
+}
+
+function deleteProject(projectId) {
+    todoList.projects = todoList.projects.filter(
+        (project) => project.id !== projectId,
+    );
+
+    todoList.tasks = todoList.tasks.filter(
+        (task) => task.projectId !== projectId,
+    );
+
+    save();
+}
+
+function toggleIsTaskDone(taskId) {
+    todoList.tasks = todoList.tasks.map((task) => {
+        if (taskId === task.id) {
+            return { ...task, isDone: !task.isDone };
+        } else {
+            return task;
+        }
+    });
+
+    save();
+}
+
+function deleteTask(taskId) {
+    todoList.tasks = todoList.tasks.filter((task) => task.id !== taskId);
+
+    save();
+}
+
+function save() {
+    localStorage.setItem("todoList", JSON.stringify(todoList));
+}
+
+export default {
+    addProject,
+    addTask,
+    getTasksInProject,
+    getProjectById,
+    getProjectByName,
+    getTaskByTitle,
+    getAllProjects,
+    deleteProject,
+    getAllTasks,
+    toggleIsTaskDone,
+    deleteTask,
+    DEFAULT_PROJECT_ID,
+};
